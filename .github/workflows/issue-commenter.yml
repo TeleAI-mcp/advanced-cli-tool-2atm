@@ -1,0 +1,49 @@
+name: Issue Comment Automation
+
+on:
+  issues:
+    types: [labeled, opened]
+
+jobs:
+  auto-comment:
+    runs-on: ubuntu-latest
+    if: github.event.action == 'labeled' || (github.event.action == 'opened' && contains(github.event.issue.labels.*.name, 'enhancement') || contains(github.event.issue.labels.*.name, 'completed') || contains(github.event.issue.labels.*.name, 'bug'))
+    steps:
+      - name: Comment on enhancement
+        if: contains(github.event.issue.labels.*.name, 'enhancement')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Thanks for the enhancement suggestion! We appreciate your input.'
+            })
+      
+      - name: Comment on completed
+        if: contains(github.event.issue.labels.*.name, 'completed')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'This issue has been resolved. Thank you for your contribution!'
+            })
+      
+      - name: Comment on bug
+        if: contains(github.event.issue.labels.*.name, 'bug')
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'Thank you for reporting this bug. Our team will investigate and fix it.'
+            })
